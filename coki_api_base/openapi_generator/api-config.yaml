@@ -1,0 +1,10 @@
+globalProperties:
+  apiTests: "true"
+  modelTests: "true"
+additionalProperties:
+  generateSourceCodeOnly: "true"
+  hideGenerationTimestamp: "true"
+  library: urllib3
+  projectName: client
+  pythonAttrNoneIfUnset: "true"
+  useNose: "false"
