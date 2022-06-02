@@ -1,0 +1,71 @@
+swagger: '2.0'
+info:
+  title: API title
+  description: API description
+  version: 1.0.0
+  contact:
+    email: agent@observatory.academy
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+
+{# Security settings #}
+{%- if type == 'cloud_endpoints' or type == 'openapi_generator' %}
+schemes:
+  - https
+produces:
+  - application/json
+securityDefinitions:
+  # This section configures basic authentication with an API key.
+  api_key:
+    type: "apiKey"
+    name: "key"
+    in: "query"
+security:
+  - api_key: []
+{%- endif %}
+
+{# Host settings #}
+{%- if type == 'openapi_generator' %}
+host: api.observatory.academy
+{%- elif type == 'cloud_endpoints' %}
+host: ${host}
+x-google-backend:
+  address: ${backend_address}
+  protocol: h2
+{%- else %}
+{%- endif %}
+
+{# Tag settings #}
+{%- if type == 'openapi_generator' %}
+tags:
+- name: Tag
+  description: Tag description
+{%- set example_tag="Example" -%}
+{% else %}
+tags:
+- name: Tag
+  description: Tag description
+{%- set example_tag="Example" -%}
+{%- endif %}
+
+{# Operation id namespace #}
+{%- if type == 'openapi_generator' %}
+{%- set operation_id_namespace="" -%}
+{% else %}
+{%- set operation_id_namespace="observatory.api.server.api." -%}
+{%- endif %}
+
+paths:
+  /example:
+    get:
+      tags:
+      - {{ example_tag }}
+      summary: Example endpoint
+      operationId: {{ operation_id_namespace }}example
+      description: Description
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Success

@@ -66,13 +66,21 @@ def run_openapi_generator(template_file, api_package_dir, api_docs_dir):
         shutil.copyfile(openapi_path, os.path.join(api_docs_dir, "openapi.yaml"))
 
         # Generate OpenAPI Python client
-        generate_api_client(installation_dir, tmp, openapi_path, api_package_name)
+        call_openapi_generator(installation_dir, tmp, openapi_path, api_package_name)
 
         # Massage files into correct directory
         move_client_files(tmp, api_package_dir, api_docs_dir, api_package_name)
 
 
 def move_client_files(tmp_dir, api_dir, docs_dir, package_name):
+    """
+
+    :param tmp_dir:
+    :param api_dir:
+    :param docs_dir:
+    :param package_name:
+    :return:
+    """
     source_dir = os.path.join(tmp_dir, "output", package_name)
 
     # Copy read the docs files
@@ -94,7 +102,15 @@ def move_client_files(tmp_dir, api_dir, docs_dir, package_name):
     shutil.copytree(source_client_dir, dest_client_dir, dirs_exist_ok=True)
 
 
-def generate_api_client(installation_dir, tmp_dir, openapi_path, package_name):
+def call_openapi_generator(installation_dir, tmp_dir, openapi_path, package_name):
+    """
+
+    :param installation_dir:
+    :param tmp_dir:
+    :param openapi_path:
+    :param package_name:
+    :return:
+    """
     openapi_generator_dir = module_file_path("coki_api_base.openapi_generator")
     templates_dir = os.path.join(openapi_generator_dir, "templates")
     config_path = os.path.join(openapi_generator_dir, "api-config.yaml")
@@ -127,6 +143,11 @@ def generate_api_client(installation_dir, tmp_dir, openapi_path, package_name):
 
 
 def install_openapi_generator(installation_dir):
+    """
+
+    :param installation_dir:
+    :return:
+    """
     print("Installing openapi-generator-cli")
     os.makedirs(installation_dir, exist_ok=True)
     openapi_generator_path = os.path.join(installation_dir, "openapi-generator-cli")
@@ -150,6 +171,12 @@ def install_openapi_generator(installation_dir):
 
 
 def openapi_generator_exists(installation_dir: str, version: str = "5.3.0") -> bool:
+    """
+
+    :param installation_dir:
+    :param version:
+    :return:
+    """
     env = os.environ.copy()
     env["PATH"] += ":~/bin/openapitools/"
     env["OPENAPI_GENERATOR_VERSION"] = version
