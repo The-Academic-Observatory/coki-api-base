@@ -139,7 +139,8 @@ class TestCliFunctions(unittest.TestCase):
             for path, subdirs, files in os.walk(api_dir):
                 for name in files:
                     api_files.append(os.path.join(path, name))
-            self.assertEqual(expected_api_files, api_files)
+            expected_api_files.sort(), api_files.sort()
+            self.assertListEqual(expected_api_files, api_files)
 
             # Check expected files in docs dir
             expected_doc_files = [
@@ -153,6 +154,7 @@ class TestCliFunctions(unittest.TestCase):
             for path, subdirs, files in os.walk(docs_dir):
                 for name in files:
                     doc_files.append(os.path.join(path, name))
+            expected_doc_files.sort(), doc_files.sort()
             self.assertEqual(expected_doc_files, doc_files)
 
     @patch("subprocess.Popen")
