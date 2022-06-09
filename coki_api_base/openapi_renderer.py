@@ -19,6 +19,9 @@ from typing import Dict
 
 import yaml
 from jinja2 import Template
+from click.testing import CliRunner
+from openapi_spec_validator import validate_v2_spec
+from openapi_spec_validator.readers import read_from_filename
 
 
 def render_template(template_path: str, **kwargs) -> str:
@@ -73,3 +76,23 @@ class OpenApiRenderer:
 
         assert self.type == "backend", "Only supported when the openapi config file is used for the backend"
         return yaml.safe_load(self.render())
+
+    def validate_spec(self, replace_env=None):
+        """ Validate the rendered OpenAPI file.
+
+        :return: None if the file is valid.
+        """
+        render = self.render()
+        # Replace environment variables used with e.g. cloud endpoints
+        if replace_env:
+            for env, value in replace_env.items():
+                render = render.replace(env, value)
+
+        with CliRunner().isolated_filesystem():
+            file_name = "openapi.yaml"
+            with open(file_name, mode="w") as f:
+                f.write(render)
+
+            spec_dict, spec_url = read_from_filename(file_name)
+        validate_v2_spec(spec_dict)
+
