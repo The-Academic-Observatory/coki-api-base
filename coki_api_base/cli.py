@@ -26,12 +26,13 @@ def cli():
 @cli.command()
 @click.argument("template-file", type=click.Path(exists=True, file_okay=True, dir_okay=False))
 @click.argument("output-file", type=click.Path(exists=False, file_okay=True, dir_okay=False))
-@click.option("--usage-type", type=click.Choice(["cloud_endpoints", "backend", "openapi_generator"]), required=True)
-def generate_openapi_spec(template_file, output_file, usage_type):
+@click.option("--usage-type", type=click.Choice(["cloud_endpoints", "backend", "openapi_generator"]), required=True,
+              help="What tool/service the rendered openapi specification will be used for.",)
+def generate_openapi_spec(template_file: str, output_file: str, usage_type: str):
     """Generate an OpenAPI specification for a COKI API.\n
 
-    TEMPLATE_FILE: the type of config file to generate.
-    OUTPUT_FILE: the type of config file to generate.
+    TEMPLATE_FILE: path to the template file for the openapi specification.
+    OUTPUT_FILE: path for the rendered openapi specification file.
     """
 
     # Render file
@@ -47,7 +48,13 @@ def generate_openapi_spec(template_file, output_file, usage_type):
 @click.argument("template-file", type=click.Path(exists=True, file_okay=True, dir_okay=False))
 @click.argument("api-package-dir", type=click.Path(exists=True, file_okay=False, dir_okay=True))
 @click.argument("api-docs-dir", type=click.Path(exists=True, file_okay=False, dir_okay=True))
-def run_openapi_generator(template_file, api_package_dir, api_docs_dir):
+def run_openapi_generator(template_file: str, api_package_dir: str, api_docs_dir: str):
+    """Generate a client library with the OpenAPI Generator for a COKI API.\n
+
+    TEMPLATE_FILE: path to the template file for the openapi specification.
+    API_PACKAGE_DIR: path to the directory of the API package.
+    API_DOCS_DIR: path to the api docs directory.
+    """
     api_package_name = os.path.basename(api_package_dir)
     installation_dir = os.path.join(str(pathlib.Path.home()), "bin", "openapitools")
 
@@ -72,14 +79,14 @@ def run_openapi_generator(template_file, api_package_dir, api_docs_dir):
         move_client_files(tmp, api_package_dir, api_docs_dir, api_package_name)
 
 
-def move_client_files(tmp_dir, api_dir, docs_dir, package_name):
-    """
+def move_client_files(tmp_dir: str, api_dir: str, docs_dir: str, package_name: str):
+    """ Move the generated client files to the correct directories.
 
-    :param tmp_dir:
-    :param api_dir:
-    :param docs_dir:
-    :param package_name:
-    :return:
+    :param tmp_dir: Temporary directory with the generated client files.
+    :param api_dir: Directory containing the API package.
+    :param docs_dir: Directory for the docs of the API.
+    :param package_name: Name of the API package.
+    :return: None.
     """
     source_dir = os.path.join(tmp_dir, "output", package_name)
 
@@ -102,14 +109,14 @@ def move_client_files(tmp_dir, api_dir, docs_dir, package_name):
     shutil.copytree(source_client_dir, dest_client_dir, dirs_exist_ok=True)
 
 
-def call_openapi_generator(installation_dir, tmp_dir, openapi_path, package_name):
-    """
+def call_openapi_generator(installation_dir: str, tmp_dir: str, openapi_path: str, package_name: str):
+    """ Call the openapi-generator-cli tool and generate the client files inside a temporary output directory.
 
-    :param installation_dir:
-    :param tmp_dir:
-    :param openapi_path:
-    :param package_name:
-    :return:
+    :param installation_dir: Directory where the openapi-generator-cli tool is installed.
+    :param tmp_dir: Temporary directory used to store output
+    :param openapi_path: Path to the openapi specification file
+    :param package_name: Name of the API package
+    :return: None.
     """
     openapi_generator_dir = module_file_path("coki_api_base.openapi_generator")
     templates_dir = os.path.join(openapi_generator_dir, "templates")
@@ -142,11 +149,11 @@ def call_openapi_generator(installation_dir, tmp_dir, openapi_path, package_name
     print(output.decode("UTF-8"))
 
 
-def install_openapi_generator(installation_dir):
-    """
+def install_openapi_generator(installation_dir: str) -> bool:
+    """ Install the OpenAPI Generator tool
 
-    :param installation_dir:
-    :return:
+    :param installation_dir: Directory for installation
+    :return: Whether the installation was successful.
     """
     print("Installing openapi-generator-cli")
     os.makedirs(installation_dir, exist_ok=True)
@@ -166,16 +173,19 @@ def install_openapi_generator(installation_dir):
     # Install
     if openapi_generator_exists(installation_dir):
         print("Successfully installed openapi-generator-cli")
+        return True
     else:
         print("Error installing openapi-generator-cli")
+        return False
 
 
 def openapi_generator_exists(installation_dir: str, version: str = "5.3.0") -> bool:
-    """
+    """ Tries to get the version of the OpenAPI Generator tool, when it cannot find this it installs the tool if the
+    openapi-generator-cli shell script is available.
 
-    :param installation_dir:
-    :param version:
-    :return:
+    :param installation_dir: Install directory
+    :param version: Version of OpenAPI Generator tool to install
+    :return: Whether the OpenAPI Generator is installed
     """
     env = os.environ.copy()
     env["PATH"] += ":~/bin/openapitools/"
@@ -189,12 +199,13 @@ def openapi_generator_exists(installation_dir: str, version: str = "5.3.0") -> b
             env=env,
         )
         output, error = proc.communicate()
-        if output:
+        # Output shows version or installation info
+        if output and not error:
             return True
+    # openapi-generator-cli shell script is not found & tool can not be installed
     except FileNotFoundError:
         return False
     return False
-
 
 def module_file_path(module_path: str, nav_back_steps: int = -1) -> str:
     """Get the file path of a module, given the Python import path to the module.
