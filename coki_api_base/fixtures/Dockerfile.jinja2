@@ -19,15 +19,17 @@
 FROM python:3.9-slim
 
 # Environment variables
-ENV PBR_VERSION 0.0.1
 ENV PYTHONUNBUFFERED True
+
+#TODO remove when coki-api-base is available on standard pypi instead of testpypi
+RUN pip3 install --upgrade --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ coki-api-base
 
 # Copy API package to the container image.
 RUN mkdir /api_folder
 COPY . ./api_folder
 
 # Install API package
-RUN pip3 install /api_folder
+RUN PBR_VERSION=0.0.1 pip3 install /api_folder
 
 # Install berglas
 COPY --from=gcr.io/berglas/berglas:latest /bin/berglas /bin/berglas
