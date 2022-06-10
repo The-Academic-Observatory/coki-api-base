@@ -1,4 +1,3 @@
-import importlib
 import os
 import pathlib
 import shutil
@@ -9,20 +8,7 @@ import tempfile
 import click
 import requests
 
-from coki_api_base.openapi_renderer import OpenApiRenderer, render_template
-
-
-def module_file_path(module_path: str, nav_back_steps: int = -1) -> str:
-    """Get the file path of a module, given the Python import path to the module.
-
-    :param module_path: the Python import path to the module, e.g. observatory.platform.dags
-    :param nav_back_steps: the number of steps on the path to step back.
-    :return: the file path to the module.
-    """
-
-    module = importlib.import_module(module_path)
-    file_path = pathlib.Path(module.__file__).resolve()
-    return os.path.normpath(str(pathlib.Path(*file_path.parts[:nav_back_steps]).resolve()))
+from coki_api_base.openapi_renderer import OpenApiRenderer, module_file_path, render_template
 
 
 @click.group()
@@ -51,7 +37,6 @@ def generate_openapi_spec(template_file: str, output_file: str, usage_type: str)
     TEMPLATE_FILE: path to the template file for the openapi specification.
     OUTPUT_FILE: path for the rendered openapi specification file.
     """
-
     # Render file
     renderer = OpenApiRenderer(template_file, usage_type=usage_type)
     render = renderer.render()
