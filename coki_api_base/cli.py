@@ -9,7 +9,20 @@ import tempfile
 import click
 import requests
 
-from coki_api_base.openapi_renderer import OpenApiRenderer
+from coki_api_base.openapi_renderer import OpenApiRenderer, render_template
+
+
+def module_file_path(module_path: str, nav_back_steps: int = -1) -> str:
+    """Get the file path of a module, given the Python import path to the module.
+
+    :param module_path: the Python import path to the module, e.g. observatory.platform.dags
+    :param nav_back_steps: the number of steps on the path to step back.
+    :return: the file path to the module.
+    """
+
+    module = importlib.import_module(module_path)
+    file_path = pathlib.Path(module.__file__).resolve()
+    return os.path.normpath(str(pathlib.Path(*file_path.parts[:nav_back_steps]).resolve()))
 
 
 @click.group()
@@ -42,6 +55,35 @@ def generate_openapi_spec(template_file: str, output_file: str, usage_type: str)
     # Render file
     renderer = OpenApiRenderer(template_file, usage_type=usage_type)
     render = renderer.render()
+
+    # Save file
+    with open(output_file, mode="w") as f:
+        f.write(render)
+
+
+@cli.command()
+@click.argument("output-file", type=click.Path(exists=False, file_okay=True, dir_okay=False))
+@click.option(
+    "--app-module-path",
+    type=click.STRING,
+    required=True,
+    help="Python module path to the 'app' instance', e.g.: my_app_folder.server.app:app",
+)
+@click.option(
+    "--template-file",
+    type=click.Path(exists=True, file_okay=True, dir_okay=False),
+    default=os.path.join(module_file_path("coki_api_base.fixtures"), "Dockerfile.jinja2"),
+    required=False,
+    help="Path to Jinja2 template of the Dockerfile",
+)
+def generate_dockerfile(output_file: str, app_module_path: str, template_file: str):
+    """Generate a Dockerfile for a COKI API.\n
+
+    OUTPUT_FILE: path for the rendered Dockerfile, should be to the root of the package.
+    """
+
+    # Render file
+    render = render_template(template_file, app_module_path=app_module_path)
 
     # Save file
     with open(output_file, mode="w") as f:
@@ -210,19 +252,6 @@ def openapi_generator_exists(installation_dir: str, version: str = "5.3.0") -> b
     except FileNotFoundError:
         return False
     return False
-
-
-def module_file_path(module_path: str, nav_back_steps: int = -1) -> str:
-    """Get the file path of a module, given the Python import path to the module.
-
-    :param module_path: the Python import path to the module, e.g. observatory.platform.dags
-    :param nav_back_steps: the number of steps on the path to step back.
-    :return: the file path to the module.
-    """
-
-    module = importlib.import_module(module_path)
-    file_path = pathlib.Path(module.__file__).resolve()
-    return os.path.normpath(str(pathlib.Path(*file_path.parts[:nav_back_steps]).resolve()))
 
 
 if __name__ == "__main__":
