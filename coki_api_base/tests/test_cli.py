@@ -58,6 +58,30 @@ class TestCli(unittest.TestCase):
             self.assertEqual(2, result.exit_code)
             self.assertFalse(os.path.isfile(output_file))
 
+    def test_generate_dockerfile(self):
+        """Test that the Dockerfile is generated"""
+        fixtures_dir = module_file_path("coki_api_base.fixtures")
+        template_file = os.path.join(fixtures_dir, "Dockerfile.jinja2")
+
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            # Test with default template file
+            output_file = f"Dockerfile"
+            result = runner.invoke(
+                cli, ["generate-dockerfile", output_file, "--app-module-path", "coki_api_base.server.app:app"]
+            )
+            self.assertEqual(os.EX_OK, result.exit_code)
+            self.assertTrue(os.path.isfile(output_file))
+
+            # Test with template file specified as parameter
+            output_file = f"Dockerfile_custom"
+            result = runner.invoke(
+                cli, ["generate-dockerfile", output_file, "--app-module-path", "coki_api_base.server.app:app",
+                      "--template-file", template_file]
+            )
+            self.assertEqual(os.EX_OK, result.exit_code)
+            self.assertTrue(os.path.isfile(output_file))
+
     @patch("coki_api_base.cli.openapi_generator_exists")
     @patch("coki_api_base.cli.install_openapi_generator")
     @patch("coki_api_base.cli.call_openapi_generator")
