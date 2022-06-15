@@ -1,0 +1,48 @@
+swagger: '2.0'
+info:
+  title: API title
+  description: API description
+  version: 1.0.0
+  contact:
+    email: agent@observatory.academy
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+
+{% set host_address="ao.api.observatory.academy" %}
+{# Set security and host settings #}
+{% include 'openapi_blocks.yaml.jinja2' %}
+
+{# Tag settings #}
+{% if type == 'openapi_generator' %}
+tags:
+- name: Tag
+  description: Tag description
+{% set example_tag="Example" %}
+{% else %}
+tags:
+- name: Tag
+  description: Tag description
+{% set example_tag="Example" %}
+{% endif %}
+
+{# Operation id namespace #}
+{% if type == 'openapi_generator' %}
+{% set operation_id_namespace="" %}
+{% else %}
+{% set operation_id_namespace="coki_api_base.fixtures.api." %}
+{% endif %}
+
+paths:
+  /example:
+    get:
+      tags:
+      - {{ example_tag }}
+      summary: Example endpoint
+      operationId: {{ operation_id_namespace }}example
+      description: Description
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Success

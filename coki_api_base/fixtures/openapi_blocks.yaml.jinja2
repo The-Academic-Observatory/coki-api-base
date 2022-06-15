@@ -1,0 +1,25 @@
+{# Security settings #}
+{% if type == 'cloud_endpoints' or type == 'openapi_generator' %}
+schemes:
+  - https
+produces:
+  - application/json
+securityDefinitions:
+  # This section configures basic authentication with an API key.
+  api_key:
+    type: "apiKey"
+    name: "key"
+    in: "query"
+security:
+  - api_key: []
+{% endif %}
+
+{# Host settings #}
+{% if type == 'openapi_generator' %}
+host: {{ host_address }}
+{% elif type == 'cloud_endpoints' %}
+host: ${host}
+x-google-backend:
+  address: ${backend_address}
+  protocol: h2
+{% endif %}
