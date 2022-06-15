@@ -9,20 +9,9 @@ info:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
 
-{# Security settings #}
-{% block security %}
-{% endblock %}
-
-{# Host settings #}
-{% block host %}
-{% endblock %}
-
-{# Operation id namespace #}
-{%- if type == 'openapi_generator' %}
-{%- set operation_id_namespace="" -%}
-{% else %}
-{%- set operation_id_namespace="coki_api_base.fixtures.api." -%}
-{%- endif %}
+{%- set host_address="ao.api.observatory.academy" -%}
+{# Set security and host settings #}
+{% include 'openapi_blocks.yaml.jinja2' %}
 
 {# Tag settings #}
 {% if type == 'openapi_generator' %}
@@ -35,6 +24,13 @@ tags:
 - name: Tag
   description: Tag description
 {% set example_tag="Example" %}
+{% endif %}
+
+{# Operation id namespace #}
+{% if type == 'openapi_generator' %}
+{% set operation_id_namespace="" %}
+{% else %}
+{% set operation_id_namespace="coki_api_base.fixtures.api." %}
 {% endif %}
 
 paths:

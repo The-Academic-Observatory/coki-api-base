@@ -22,35 +22,27 @@ from typing import Dict
 
 import yaml
 from click.testing import CliRunner
-from jinja2 import DictLoader, Environment
+from jinja2 import DictLoader, Environment, FileSystemLoader
 from openapi_spec_validator import validate_v2_spec
 from openapi_spec_validator.readers import read_from_filename
 
 
-def render_template(parent_template_path: str, child_template_path: str = None, **kwargs) -> str:
+def render_template(template_path: str, child_template_path: str = None, **kwargs) -> str:
     """Render a Jinja2 template.
 
-    :param parent_template_path: the path to the parent template.
-    :param child_template_path: the path to the child template.
+    :param template_path: the path to the template.
+    :param child_template_path: Optional path to a child template that is included.
     :param kwargs: the keyword variables to populate the template with.
     :return: the rendered template as a string.
     """
-
-    # Read parent template content
-    with open(parent_template_path, "r") as file:
-        parent = file.read()
-
+    template_search_paths = [os.path.dirname(template_path)]
     if child_template_path:
-        # Read child template content from file
-        with open(child_template_path, "r") as file:
-            child = file.read()
-    else:
-        # Set child template to just extend parent
-        child = "{% extends 'parent' %}"
+        template_search_paths.append(os.path.dirname(child_template_path))
 
     # Fill template with text using common blocks
-    env = Environment(loader=DictLoader({"parent": parent, "child": child}), trim_blocks=True)
-    template = env.get_template("child")
+    env = Environment(loader=FileSystemLoader(template_search_paths),
+                      trim_blocks=True)
+    template = env.get_template(os.path.basename(template_path))
 
     # Render template
     rendered = template.render(**kwargs)

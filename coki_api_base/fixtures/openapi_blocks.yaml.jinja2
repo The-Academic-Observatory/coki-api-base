@@ -1,5 +1,4 @@
-{% extends 'parent' %}
-{% block security %}
+{# Security settings #}
 {% if type == 'cloud_endpoints' or type == 'openapi_generator' %}
 schemes:
   - https
@@ -14,15 +13,13 @@ securityDefinitions:
 security:
   - api_key: []
 {% endif %}
-{% endblock %}
 
-{% block host %}
+{# Host settings #}
 {% if type == 'openapi_generator' %}
-host: ao.api.observatory.academy
+host: {{ host_address }}
 {% elif type == 'cloud_endpoints' %}
 host: ${host}
 x-google-backend:
   address: ${backend_address}
   protocol: h2
 {% endif %}
-{% endblock %}
